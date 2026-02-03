@@ -1,0 +1,16 @@
+{
+  "name": "aagrasp",
+  "version": "1.0.0",
+  "description": "Replacement for grasp that handles modern syntax",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cian Chambliss",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "^7.29.0",
+    "esquery": "^1.7.0",
+    "recast": "^0.23.11"
+  }
+}
