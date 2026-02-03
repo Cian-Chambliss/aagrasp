@@ -56,9 +56,42 @@ function search(mode, selector, code) {
   if (typeof code !== "string") throw new Error("Expected 'code' to be a string");
   if (!selector) return [];
   const ast = parse(code);
+
+  // Compatibility: support legacy grasp selector of the form `#/regex/flags`
+  // We interpret this as: match Identifier nodes whose `name` matches the regex.
+  if (typeof selector === "string" && selector.startsWith("#/")) {
+    // Parse regex literal from the selector; handle escaped slashes.
+    let i = 2; // start after '#/'
+    let body = "";
+    let escaped = false;
+    for (; i < selector.length; i++) {
+      const ch = selector[i];
+      if (!escaped) {
+        if (ch === "\\") {
+          escaped = true;
+          body += ch;
+          continue;
+        }
+        if (ch === "/") {
+          i++; // move past closing slash
+          break;
+        }
+        body += ch;
+      } else {
+        // previous char was escape
+        escaped = false;
+        body += ch;
+      }
+    }
+    const flags = selector.slice(i);
+    // Build equivalent esquery selector
+    const normalized = `Identifier[name=/${body}/${flags}]`;
+    const nodes = esquery.query(ast.program || ast, normalized);
+    return nodes; // return raw AST nodes for compatibility with callers
+  }
+
   const nodes = esquery.query(ast.program || ast, selector);
-  // Return array of source code snippets for each matched node
-  return nodes.map(n => print(n));
+  return nodes; // return raw AST nodes
 }
 
 function replace(mode, selector, replacement, code) {
